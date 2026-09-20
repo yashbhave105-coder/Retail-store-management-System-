@@ -1,0 +1,10 @@
+# Dependencies
+node_modules/
+
+# Build & Temp outputs
+bin/
+obj/
+.vs/
+.idea/
+*.log
+*.tmp

@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OmniRetail | Store & Management System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- HEADER NAVBAR -->
+  <header>
+    <div class="navbar">
+      <div class="brand">
+        <div class="brand-icon"><i class="fa-solid fa-shop"></i></div>
+        <span>Omni<span style="color: var(--primary-light);">Retail</span></span>
+      </div>
+
+      <nav class="nav-links" id="nav-links">
+        <button class="nav-item active" id="nav-store-btn" onclick="app.showView('store-view')">
+          <i class="fa-solid fa-store"></i> Store
+        </button>
+        <button class="nav-item" id="nav-myorders-btn" onclick="app.showView('orders-view')" style="display: none;">
+          <i class="fa-solid fa-box-open"></i> My Orders
+        </button>
+        <button class="nav-item" id="nav-admin-btn" onclick="app.showView('admin-view')" style="display: none;">
+          <i class="fa-solid fa-chart-line"></i> Admin Panel
+        </button>
+      </nav>
+
+      <div class="nav-links">
+        <button class="nav-item" id="cart-trigger-btn" onclick="store.toggleCart(true)" style="display: none;">
+          <i class="fa-solid fa-cart-shopping"></i>
+          <span style="background: var(--primary); color: white; border-radius: 99px; padding: 0.1rem 0.5rem; font-size: 0.75rem;" id="cart-count-badge">0</span>
+        </button>
+
+        <div id="user-info-bar" class="user-badge" style="display: none;">
+          <i class="fa-solid fa-user-circle"></i>
+          <span id="user-name-display">User</span>
+          <span class="role-pill" id="user-role-display">Customer</span>
+          <button onclick="auth.logout()" title="Logout" style="background: none; color: #cbd5e1; margin-left: 0.5rem;">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>
+        </div>
+
+        <button class="btn btn-primary" id="login-nav-btn" onclick="app.showView('auth-view')">
+          <i class="fa-solid fa-lock"></i> Sign In
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN SPA VIEW CONTAINER -->
+  <main class="main-container">
+
+    <!-- 1. AUTHENTICATION VIEW (ADMIN / CUSTOMER LOGIN) -->
+    <section id="auth-view" class="view-section active">
+      <div class="auth-wrapper">
+        <div class="auth-header">
+          <h2>Welcome Back</h2>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Sign in to access your Retail Account</p>
+        </div>
+
+        <div class="auth-tabs">
+          <div class="auth-tab active" id="tab-login" onclick="auth.switchAuthTab('login')">Sign In</div>
+          <div class="auth-tab" id="tab-register" onclick="auth.switchAuthTab('register')">Register</div>
+        </div>
+
+        <!-- Login Form -->
+        <form id="login-form" onsubmit="auth.handleLogin(event)">
+          <div class="form-group">
+            <label>Login Portal Role</label>
+            <select id="login-requested-role" class="form-input">
+              <option value="Customer">Customer Login</option>
+              <option value="Admin">Admin Login</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" id="login-email" class="form-input" placeholder="name@domain.com" required>
+          </div>
+
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="login-password" class="form-input" placeholder="••••••••" required>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-full">
+            <i class="fa-solid fa-right-to-bracket"></i> Login to Portal
+          </button>
+        </form>
+
+        <!-- Register Form (Hidden by default) -->
+        <form id="register-form" onsubmit="auth.handleRegister(event)" style="display: none;">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="reg-name" class="form-input" placeholder="John Doe" required>
+          </div>
+
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" id="reg-email" class="form-input" placeholder="john@example.com" required>
+          </div>
+
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="reg-password" class="form-input" placeholder="At least 6 characters" required>
+          </div>
+
+          <div class="form-group">
+            <label>Account Role</label>
+            <select id="reg-role" class="form-input">
+              <option value="Customer">Customer Account</option>
+              <option value="Admin">Admin Account</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-full">
+            <i class="fa-solid fa-user-plus"></i> Create Account
+          </button>
+        </form>
+
+        <!-- Quick Demo Accounts -->
+        <div class="demo-credentials-box">
+          <p>Quick Demo Credentials</p>
+          <div class="demo-btns">
+            <button class="btn-demo" onclick="auth.fillDemo('admin')">
+              <i class="fa-solid fa-user-gear"></i> Admin Demo
+            </button>
+            <button class="btn-demo" onclick="auth.fillDemo('customer')">
+              <i class="fa-solid fa-cart-shopping"></i> Customer Demo
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. CUSTOMER STOREFRONT VIEW -->
+    <section id="store-view" class="view-section">
+      <div class="hero-banner">
+        <div class="hero-content">
+          <h1>Modern Retail Store</h1>
+          <p>Discover premium gadgets, trendy apparel, ergonomic office gear, and daily essentials with instant home delivery.</p>
+        </div>
+        <i class="fa-solid fa-bag-shopping" style="font-size: 7rem; opacity: 0.15; position: absolute; right: 2rem;"></i>
+      </div>
+
+      <!-- Search & Filters -->
+      <div class="catalog-controls">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="store-search-input" placeholder="Search products by title or description..." oninput="store.filterProducts()">
+        </div>
+
+        <div class="category-pills" id="category-pills-container">
+          <button class="pill-btn active" onclick="store.selectCategory(0, this)">All Categories</button>
+          <!-- Dynamic Category Pills -->
+        </div>
+      </div>
+
+      <!-- Products Grid -->
+      <div class="products-grid" id="products-grid">
+        <!-- Dynamic Product Cards -->
+      </div>
+    </section>
+
+    <!-- 3. CUSTOMER ORDERS HISTORY VIEW -->
+    <section id="orders-view" class="view-section">
+      <div class="data-card">
+        <div class="data-card-header">
+          <h3><i class="fa-solid fa-receipt"></i> My Purchase History</h3>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Date</th>
+                <th>Items Purchased</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Shipping Address</th>
+              </tr>
+            </thead>
+            <tbody id="customer-orders-tbody">
+              <!-- Dynamic Customer Orders -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. ADMIN DASHBOARD & MANAGEMENT VIEW -->
+    <section id="admin-view" class="view-section">
+      
+      <!-- Key Metric Cards -->
+      <div class="admin-stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon-wrapper revenue"><i class="fa-solid fa-dollar-sign"></i></div>
+          <div>
+            <div class="stat-val" id="stat-revenue">₹0.00</div>
+            <div class="stat-lbl">Total Sales Revenue</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrapper orders"><i class="fa-solid fa-clipboard-list"></i></div>
+          <div>
+            <div class="stat-val" id="stat-orders">0</div>
+            <div class="stat-lbl">Total Store Orders</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrapper products"><i class="fa-solid fa-boxes-stacked"></i></div>
+          <div>
+            <div class="stat-val" id="stat-products">0</div>
+            <div class="stat-lbl">Active Products</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrapper warning"><i class="fa-solid fa-triangle-exclamation"></i></div>
+          <div>
+            <div class="stat-val" id="stat-lowstock">0</div>
+            <div class="stat-lbl">Low Stock Alerts</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Product Management Card -->
+      <div class="data-card">
+        <div class="data-card-header">
+          <h3><i class="fa-solid fa-box"></i> Inventory & Product Catalog Management</h3>
+          <button class="btn btn-primary" onclick="admin.openProductModal()">
+            <i class="fa-solid fa-plus"></i> Add New Product
+          </button>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Stock Quantity</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-products-tbody">
+              <!-- Dynamic Product Admin Rows -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Order Fulfillment Card -->
+      <div class="data-card">
+        <div class="data-card-header">
+          <h3><i class="fa-solid fa-truck-ramp-box"></i> Customer Order Processing Pipeline</h3>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Date</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Update Status</th>
+              </tr>
+            </thead>
+            <tbody id="admin-orders-tbody">
+              <!-- Dynamic Order Admin Rows -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- SHOPPING CART SLIDE-OUT DRAWER -->
+  <div class="cart-drawer-overlay" id="cart-overlay" onclick="store.toggleCart(false)"></div>
+  <aside class="cart-drawer" id="cart-drawer">
+    <div class="cart-header">
+      <h3><i class="fa-solid fa-basket-shopping"></i> Shopping Cart</h3>
+      <button class="close-btn" onclick="store.toggleCart(false)"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="cart-body" id="cart-items-container">
+      <!-- Dynamic Cart Items -->
+    </div>
+    <div class="cart-footer">
+      <div class="cart-summary-line">
+        <span>Subtotal:</span>
+        <span class="cart-total-price" id="cart-total-display">₹0.00</span>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="store.openCheckout()">
+        <i class="fa-solid fa-credit-card"></i> Proceed to Checkout
+      </button>
+    </div>
+  </aside>
+
+  <!-- CHECKOUT MODAL -->
+  <div class="modal-backdrop" id="checkout-modal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-truck"></i> Complete Your Purchase</h3>
+        <button class="close-btn" onclick="app.closeModal('checkout-modal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <form id="checkout-form" onsubmit="store.submitOrder(event)">
+          <div class="form-group">
+            <label>Shipping Address</label>
+            <textarea id="checkout-address" class="form-input" rows="3" placeholder="Enter your full street address, city, and zip code" required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Payment Method</label>
+            <select id="checkout-payment" class="form-input">
+              <option value="UPI / GPay / PhonePe">UPI / GPay / PhonePe</option>
+              <option value="Credit / Debit Card">Credit / Debit Card</option>
+              <option value="Net Banking">Net Banking</option>
+              <option value="Cash on Delivery">Cash on Delivery</option>
+            </select>
+          </div>
+
+          <div style="background: var(--surface-alt); padding: 1rem; border-radius: var(--radius-md); margin-top: 1rem;">
+            <div class="cart-summary-line" style="margin-bottom: 0;">
+              <span>Amount Due:</span>
+              <span style="font-weight: 800; color: var(--primary);" id="checkout-total-display">₹0.00</span>
+            </div>
+          </div>
+
+          <div class="modal-footer" style="padding-right: 0; padding-left: 0; background: none; border: none; margin-top: 1.5rem;">
+            <button type="button" class="btn btn-secondary" onclick="app.closeModal('checkout-modal')">Cancel</button>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Confirm Order</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN ADD / EDIT PRODUCT MODAL -->
+  <div class="modal-backdrop" id="product-modal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="product-modal-title"><i class="fa-solid fa-box-archive"></i> Add New Product</h3>
+        <button class="close-btn" onclick="app.closeModal('product-modal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <form id="product-form" onsubmit="admin.saveProduct(event)">
+          <input type="hidden" id="prod-id">
+
+          <div class="form-group">
+            <label>Product Name</label>
+            <input type="text" id="prod-name" class="form-input" placeholder="e.g. Wireless Ergonomic Mouse" required>
+          </div>
+
+          <div class="form-group">
+            <label>Category</label>
+            <select id="prod-category" class="form-input" required>
+              <!-- Dynamic Category Select -->
+            </select>
+          </div>
+
+          <div style="display: flex; gap: 1rem;">
+            <div class="form-group" style="flex: 1;">
+              <label>Price (₹)</label>
+              <input type="number" step="0.01" id="prod-price" class="form-input" placeholder="1499.00" required>
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label>Stock Quantity</label>
+              <input type="number" id="prod-stock" class="form-input" placeholder="25" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Image URL</label>
+            <input type="url" id="prod-image" class="form-input" placeholder="https://images.unsplash.com/...">
+          </div>
+
+          <div class="form-group">
+            <label>Description</label>
+            <textarea id="prod-desc" class="form-input" rows="3" placeholder="Product features and specifications..."></textarea>
+          </div>
+
+          <div class="modal-footer" style="padding-right: 0; padding-left: 0; background: none; border: none;">
+            <button type="button" class="btn btn-secondary" onclick="app.closeModal('product-modal')">Cancel</button>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Item</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATIONS CONTAINER -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- JAVASCRIPT SCRIPTS -->
+  <script src="js/app.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>
